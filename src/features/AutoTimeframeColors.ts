@@ -202,42 +202,18 @@ class AutoTimeframeColors extends Feature {
     if (!this.isEnabled() || !this.canvas) return;
     if (e.target !== this.canvas && !this.canvas.contains(e.target as Node)) return;
 
-    // Get current timeframe with multiple fallback methods
+    // Get current timeframe — space-padded class check avoids false match on isInteractive-xxx
     const currentTimeframe: string | null = (
-      // Method 1: Original selector with class containing "isActive"
-      (document.querySelector('#header-toolbar-intervals div button[class*="isActive"]') as HTMLElement)?.textContent ||
-
-      // Method 2: Fallback - check for any class containing 'active' or 'selected'
       (() => {
-        const allTimeframeButtons = Array.from(document.querySelectorAll('#header-toolbar-intervals div button')) as HTMLElement[];
-        const foundElement = allTimeframeButtons.find(button =>
-          Array.from(button.classList).some(className =>
-            className.toLowerCase().includes('active') ||
-            className.toLowerCase().includes('selected')
-          )
-        );
-        return foundElement?.textContent || null;
-      })() ||
-
-      // Method 3: Fallback - check for aria-selected attribute
-      (document.querySelector('#header-toolbar-intervals div button[aria-selected="true"]') as HTMLElement)?.textContent ||
-
-      // Method 4: Fallback - check for any attribute containing 'active' or 'selected'
-      (() => {
-        const allTimeframeButtons = Array.from(document.querySelectorAll('#header-toolbar-intervals div button')) as HTMLElement[];
-        const foundElement = allTimeframeButtons.find(button => {
-          for (let i = 0; i < button.attributes.length; i++) {
-            const attr = button.attributes[i];
-            if (attr.name.includes('active') || attr.value.includes('active') ||
-              attr.name.includes('selected') || attr.value.includes('selected')) {
-              return true;
-            }
-          }
-          return false;
+        const buttons = Array.from(document.querySelectorAll('#header-toolbar-intervals div button'));
+        const activeBtn = buttons.find(b => {
+          const cn = ' ' + (b as HTMLElement).className + ' ';
+          return cn.includes(' isActive') || cn.includes(' active-');
         });
-        return foundElement?.textContent || null;
+        return activeBtn ? (activeBtn as HTMLElement).textContent : null;
       })() ||
-
+      (document.querySelector('#header-toolbar-intervals div button[aria-selected="true"]') as HTMLElement)?.textContent ||
+      (document.querySelector('#header-toolbar-intervals div button[aria-pressed="true"]') as HTMLElement)?.textContent ||
       null
     );
 
@@ -245,22 +221,35 @@ class AutoTimeframeColors extends Feature {
 
     // Wait for toolbar
     waitForElm('.floating-toolbar-react-widgets__button').then((e) => {
-      // Wait for the color selector to be available before clicking
       waitForElm('[data-name="line-tool-color"]').then((colorElement) => {
-        if (colorElement) {
+        if (!colorElement) return;
+        const swatchSelector = '[data-qa-id="line-tool-color-menu"] [data-role="swatch"]';
+
+        // Only click to open the menu if it's not already open.
+        // Clicking when open would toggle it closed, causing a race with waitForElm.
+        if (!document.querySelector(swatchSelector)) {
           (colorElement as HTMLElement).click();
-          let allColors = document.querySelectorAll('[data-qa-id="line-tool-color-menu"] [data-role="swatch"]');
+        }
+
+        // waitForElm resolves instantly if menu is open, or waits for it to appear
+        waitForElm(swatchSelector).then(() => {
+          // Prioritize new data-qa-id selector; fall back to old data-name selector
+          let allColors = document.querySelectorAll(swatchSelector);
           if (!allColors.length) {
             allColors = document.querySelectorAll('[data-name="line-tool-color-menu"] div:not([class]) button');
           }
           const local_colors = this.getConfigValue('colors');
-          if (allColors.length > 0 && local_colors[currentTimeframe] !== undefined && allColors[local_colors[currentTimeframe]]) {
-            (allColors[local_colors[currentTimeframe]] as HTMLElement).click();
+          const colorIdx = local_colors[currentTimeframe];
+          if (allColors.length > 0 && colorIdx !== undefined && allColors[colorIdx]) {
+            (allColors[colorIdx] as HTMLElement).click();
           }
-        }
+        });
       });
     })
   }
+
+
+
 
   init() {
     this.initDefaultColors();
@@ -270,4 +259,4 @@ class AutoTimeframeColors extends Feature {
       this.canvas = document.querySelectorAll('.chart-gui-wrapper canvas')[1] as HTMLCanvasElement;
     })
   }
-}
+}
