@@ -44,6 +44,7 @@
         "dist/features/MoveTimeRight.js",
         "dist/features/TimeframeScroll.js",
         "dist/features/ZoomChart.js",
+        "dist/features/LimitOrderOnly.js",
         "dist/main.js"
       ],
       "css": [
