@@ -223,18 +223,11 @@ class AutoTimeframeColors extends Feature {
     waitForElm('.floating-toolbar-react-widgets__button').then((e) => {
       waitForElm('[data-name="line-tool-color"]').then((colorElement) => {
         if (!colorElement) return;
-        const swatchSelector = '[data-qa-id="line-tool-color-menu"] [data-role="swatch"]';
+        (colorElement as HTMLElement).click();
 
-        // Only click to open the menu if it's not already open.
-        // Clicking when open would toggle it closed, causing a race with waitForElm.
-        if (!document.querySelector(swatchSelector)) {
-          (colorElement as HTMLElement).click();
-        }
-
-        // waitForElm resolves instantly if menu is open, or waits for it to appear
-        waitForElm(swatchSelector).then(() => {
-          // Prioritize new data-qa-id selector; fall back to old data-name selector
-          let allColors = document.querySelectorAll(swatchSelector);
+        // Wait for color swatches to render after clicking color button
+        waitForElm('[data-qa-id="line-tool-color-menu"] [data-role="swatch"]').then(() => {
+          let allColors = document.querySelectorAll('[data-qa-id="line-tool-color-menu"] [data-role="swatch"]');
           if (!allColors.length) {
             allColors = document.querySelectorAll('[data-name="line-tool-color-menu"] div:not([class]) button');
           }
