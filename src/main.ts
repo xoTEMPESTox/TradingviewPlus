@@ -236,6 +236,7 @@ features.set('Quick Toolbar', new QuickToolbar());
 features.set('Timeframe Scroll', new TimeframeScroll());
 features.set('Scroll Price Scale', new ScrollPriceScale());
 features.set('Zoom Chart', new ZoomChart());
+features.set('Limit Order Only', new LimitOrderOnly());
 
 // Create TVP background
 const tvp_background = document.createElement('div');
