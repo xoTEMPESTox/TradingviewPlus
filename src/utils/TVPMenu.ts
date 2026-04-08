@@ -77,8 +77,7 @@ class TVPMenu {
       const menu = document.getElementById('tvp-menu');
       const dots = container.querySelector('svg');
       if (!menu || !dots || feature.getContextMenuOptions().length === 0) return;
-      const x = dots.getBoundingClientRect().x - menu.getBoundingClientRect().x;
-      const cm = new ContextMenu([x, dots.getBoundingClientRect().y]);
+      const cm = new ContextMenu([dots.getBoundingClientRect().x, dots.getBoundingClientRect().y]);
       cm.renderList(feature.getContextMenuOptions());
     }
 
@@ -368,6 +367,9 @@ class TVPMenu {
 
     container.style.left = -container.getBoundingClientRect().width+'px';
     textBox.blur();
+
+    // Ensure all submenus (context menu, color pickers, etc) close when the menu gets closed via Keyboard / Escape
+    document.dispatchEvent(new MouseEvent('mousedown'));
   }
 
   isOpen() {

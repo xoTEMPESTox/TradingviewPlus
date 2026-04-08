@@ -41,11 +41,11 @@ class ContextMenu {
 
   render(): HTMLElement {
     const container = document.createElement('div');
-    const menu = document.getElementById('tvp-menu');
-    if (!menu) return container;
-
     this.element = container;
     container.className = 'contextMenu';
+    
+    // Ensure it overlays over everything by appending to body and fixing position
+    container.style.position = 'fixed';
     
     // Calculate the width of the container without adding it to the DOM
     container.style.visibility = 'hidden';
@@ -57,10 +57,12 @@ class ContextMenu {
       if (container.classList.contains('tvp-light'))
         container.classList.remove('tvp-light');
     
+    document.body.appendChild(container);
+
     // Calculate the width
     const containerWidth = container.offsetWidth;
+    const menuWidth = window.innerWidth;
     
-    const menuWidth = window.innerWidth - menu.getBoundingClientRect().x;
     if (this.position[0] + containerWidth > menuWidth) {
       this.position[0] -= containerWidth;
     }
@@ -70,7 +72,6 @@ class ContextMenu {
     container.style.left = this.position[0] + 'px';
     container.style.top = this.position[1] + 'px';
 
-    menu.appendChild(container);
     this.listenForOutsideClicks();
 
     return container;
