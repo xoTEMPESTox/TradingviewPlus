@@ -129,8 +129,27 @@ class AutoTimeframeColors extends Feature {
 
         /* Update ColorPickerMenu position */
         // Calculate position
-        const offset = cm.element.getBoundingClientRect().right - cm.element.getBoundingClientRect().left + 2;
-        colorPickerCm.updatePosition([x + offset, y]);
+        const cmWidth = cm.element.getBoundingClientRect().right - cm.element.getBoundingClientRect().left;
+        let targetX = x + cmWidth + 2;
+
+        const menu = document.getElementById('tvp-menu');
+        if (menu && colorPickerCm.element) {
+          colorPickerCm.element.hidden = false;
+          colorPickerCm.element.style.visibility = 'hidden';
+
+          const pickerWidth = colorPickerCm.element.offsetWidth;
+          const menuWidth = window.innerWidth;
+
+          // If it flows off screen to the right, open to the left instead
+          if (targetX + pickerWidth > menuWidth) {
+            targetX = x - pickerWidth - 2;
+          }
+
+          colorPickerCm.element.style.visibility = 'visible';
+          colorPickerCm.element.hidden = true;
+        }
+
+        colorPickerCm.updatePosition([targetX, y]);
       })
     ]);
   }
